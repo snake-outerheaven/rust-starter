@@ -2,11 +2,13 @@
 // vou fazer umas pequenas alterações do original, primeiramente, pretendo modularizar o código, criando uma
 // função que obtenha a entrada do número ( a função vai retornar um result)
 
+use chrono::{DateTime, Local};
 use rand::Rng; // biblioteca externa para geração de valores aleatórios
 use std::cmp::Ordering;
 // estrutura de comparação de números, da biblioteca padrão de comparativos
-use std::fs::OpenOptions; // biblioteca de manipulação de arquivos em rust
-use std::io::{self, Read, Seek, Write}; // biblioteca padrão de entrada e saída
+use std::fs::{File, OpenOptions, create_dir_all}; // biblioteca de manipulação de arquivos em rust
+use std::io::{self, Read, Seek, Write};
+use std::path::PathBuf; // biblioteca padrão de entrada e saída
 // chamei desse jeito pela forma especial, de chamar um módulo interno e a biblioteca ao mesmo tempo
 // pois nas outras bibliotecas, reduzi o escopo, enquanto em io, preciso manter o uso total devido
 // ao fato de I/O ser o core do programa
@@ -103,7 +105,7 @@ fn obtendo_nome() -> String {
     nome = nome.trim().to_string();
 
     while !confirmar {
-        println!("O nome '{}' está correto? (S/N)", nome);
+        println!("O nome '{nome}' está correto? (S/N)");
         io::stdin()
             .read_line(&mut resposta)
             .expect("Crash and burn, falha ao ler stdin!");
@@ -188,29 +190,85 @@ fn main() {
     println!("Seu progresso será salvo na pasta log do projeto!");
     let usuario: String = obtendo_nome();
     let (numero_secreto, tentativas) = jogar();
+    let tempo_atual: DateTime<Local> = Local::now();
+    let time_stamp_now: String = tempo_atual.format("%d/%m/%Y - %H:%M").to_string();
     let linha = format!(
-        "Nome do jogador: {} - Número de tentativas: {} - Número secreto da rodada: {}",
-        usuario, tentativas, numero_secreto
+        "Nome do jogador: {usuario} - Número de tentativas: {tentativas} - Número secreto da rodada: {numero_secreto} | Horário da partida: {time_stamp_now}"
     );
+
+    // em ultima análise, fica mais interessante refatorar o código
+
     // fica para o registro como gerenciar arquivos...
-    let mut arquivo = OpenOptions::new()
+    let mut log: PathBuf = PathBuf::from("log");
+
+    if !log.exists() {
+        sleep(Duration::from_millis(750));
+        println!("Diretório de registro não existe, tentando cria-lo...");
+        match create_dir_all(&log) {
+            // tive que passar por referencia, pois só preciso do valor
+            Ok(_) => {
+                sleep(Duration::from_millis(750));
+                println!("Diretório de registro criado!");
+            }
+            Err(_) => {
+                sleep(Duration::from_millis(750));
+                println!(
+                    "Não foi possível criar o diretório de registro, verifique suas permissões no sistema."
+                );
+            }
+        }
+    };
+
+    log.push("game_log.txt");
+    // adicionando o caminho do jogo, olhando em um sentido mais técnico, Pathbuf é uma estrutura complexa
+    // de dados que suporta operações de pilha.
+
+    let mut arquivo: Option<File> = match OpenOptions::new()
         .append(true)
         .create(true)
         .read(true)
-        .open("log/game_log.txt")
-        .expect("falha ao abrir arquivo, crie a pasta log no diretório do projeto");
-
-    match writeln!(arquivo, "{}\n", linha) {
-        Ok(_) => {
-            sleep(Duration::from_millis(250));
-            println!("Dados salvos com sucesso!");
+        .open(&log)
+    // passo o log por referencia, coletando o valor, sem & o programa cria uma nova instancia de log para
+    // ser usada aqui.
+    {
+        Ok(file) => {
+            sleep(Duration::from_millis(750));
+            println!("Acesso ao log do jogo garantido!");
+            Some(file)
         }
         Err(_) => {
-            sleep(Duration::from_millis(250));
-            println!("Erro ao salvar arquivo, favor verificar se a pasta log do projeto existe.");
-            println!("Aqui seguem os dados do jogador para registro externo.");
+            sleep(Duration::from_millis(750));
+            println!("Não foi possível garantir o acesso ao log do jogo.");
+            None
         }
     };
+
+    // arquivo agora é um Option<File>
+    // Option é um enum, consistindo de
+    // 2 variantes, Some e None, Some
+    // trata o caso quando o arquivo existe
+    // e None é quando ele não existe.
+    // Como Some pode se referir a uma
+    // gama de tipos, essa enum é um dos
+    // vários casos para
+
+    if let Some(arquivo) = arquivo.as_mut() {
+        match writeln!(arquivo, "{linha}\n") {
+            Ok(_) => {
+                sleep(Duration::from_millis(250));
+                println!("Dados salvos com sucesso!");
+            }
+            Err(_) => {
+                sleep(Duration::from_millis(250));
+                println!(
+                    "Erro ao salvar arquivo, favor verificar se a pasta log do projeto existe."
+                );
+                println!("Aqui seguem os dados do jogador para registro externo.");
+            }
+        };
+    } else {
+        println!("Não há logs disponíveis para salvamento");
+    }
 
     sleep(Duration::from_millis(250));
 
@@ -220,13 +278,17 @@ fn main() {
 
     let mut conteudo = String::new();
 
-    arquivo
-        .rewind()
-        .expect("Falha ao mudar o cursor para o começo!");
+    if let Some(arquivo) = arquivo.as_mut() {
+        arquivo
+            .rewind()
+            .expect("Falha ao mudar o cursor para o começo!");
 
-    arquivo
-        .read_to_string(&mut conteudo)
-        .expect("Falha ao ler o conteúdo do arquivo");
+        arquivo
+            .read_to_string(&mut conteudo)
+            .expect("Falha ao ler o conteúdo do arquivo");
 
-    println!("{}", conteudo);
+        println!("{conteudo}");
+    } else {
+        println!("Aqui deveria haver a leitura do arquivo, mas como não houve, ")
+    }
 }
