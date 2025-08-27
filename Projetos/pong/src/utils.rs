@@ -8,6 +8,12 @@ use std::{
 
 // um simples lembrete, este arquivo contém utilitários, então tudo deve ter pub na frente.
 
+// area das enumeraçoes que podem ser úteis.
+pub enum Direcao {
+    Up,
+    Down,
+}
+
 // area das structs que podem ser úteis.
 
 // área dos métodos das structs
