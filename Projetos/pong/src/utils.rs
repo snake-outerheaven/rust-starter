@@ -1,3 +1,4 @@
+use rand::prelude::*;
 use std::{
     io::{self, Write},
     process::Command,
@@ -5,9 +6,14 @@ use std::{
     time::Duration,
 };
 
-use rand::prelude::*;
+// um simples lembrete, este arquivo contém utilitários, então tudo deve ter pub na frente.
 
-/// função dedicada
+// area das structs que podem ser úteis.
+
+// área dos métodos das structs
+
+// area das funções
+/// utilitário que busca limpar a tela da forma mais portátil possível.
 pub fn limpar_tela() {
     let cmd: &str = if cfg!(windows) { "cls" } else { "clear" };
     // caso houvesse outros sistemas operacionais, seria um else if cfg!(unix)
@@ -16,20 +22,19 @@ pub fn limpar_tela() {
     if Command::new(cmd).status().is_err() {
         print!("\x1B[2J\x1B[H");
         if io::stdout().flush().is_err() {
-            eprintln!("Falha ao limpar tela, com ANSI escape...");
+            eprintln!("Falha ao limpar tela com ANSI escape...");
         }
     }
 }
-
+/// sim, apenas para facilitar o desenvolvimento de software
 pub fn wait(ms: u64) {
     sleep(Duration::from_millis(ms));
 }
 
-pub fn xy_generator(width: u32, height: u32) -> (u32, u32) {
-    let mut rng = rand::rng();
+pub fn rand_generator(bot: i32, top: i32) -> i32 {
+    let mut rngesus = rand::rng();
 
-    let objx = rng.random_range(0..=width);
-    let objy = rng.random_range(0..=height);
+    let out: i32 = rngesus.random_range(bot..=top);
 
-    (objx, objy)
+    out
 }
