@@ -162,12 +162,7 @@ impl Paddle {
     pub fn update(&mut self, dt: f32) {
         self.y += self.vy * dt;
         // limita dentro da arena
-        if self.y < 0.0 {
-            self.y = 0.0;
-        }
-        if self.y > ARENA_HEIGHT {
-            self.y = ARENA_HEIGHT;
-        }
+        self.y = self.y.clamp(0.0, ARENA_HEIGHT);
     }
 }
 
@@ -326,23 +321,21 @@ impl Game {
         // Colisões com raquetes
         if (self.ball.x - self.p1.x).abs() < 0.5
             && (self.p1.y - self.p1.height..=self.p1.y + self.p1.height).contains(&self.ball.y)
+            && old_x > self.p1.x
         {
-            if old_x > self.p1.x {
-                // Evita colisões múltiplas
-                self.ball.vx = -self.ball.vx;
-                self.ball.accelerate();
-                had_collision = true;
-            }
+            // Evita colisões múltiplas
+            self.ball.vx = -self.ball.vx;
+            self.ball.accelerate();
+            had_collision = true;
         }
         if (self.ball.x - self.p2.x).abs() < 0.5
             && (self.p2.y - self.p2.height..=self.p2.y + self.p2.height).contains(&self.ball.y)
+            && old_x < self.p2.x
         {
-            if old_x < self.p2.x {
-                // Evita colisões múltiplas
-                self.ball.vx = -self.ball.vx;
-                self.ball.accelerate();
-                had_collision = true;
-            }
+            // Evita colisões múltiplas
+            self.ball.vx = -self.ball.vx;
+            self.ball.accelerate();
+            had_collision = true;
         }
 
         had_collision
@@ -385,7 +378,7 @@ async fn main() {
         game.update(dt);
 
         // Desenho
-        clear_background(WHITE);
+        clear_background(BLACK);
 
         // Desenha as raquetes
         draw_rectangle(
@@ -409,7 +402,7 @@ async fn main() {
             to_screen_y(game.ball.y),
             BALL_SIZE,
             BALL_SIZE,
-            BLACK,
+            GREEN,
         );
 
         // Desenha as pontuações
@@ -418,14 +411,14 @@ async fn main() {
             screen_width() * 0.25,
             50.0,
             50.0,
-            BLACK,
+            BLUE,
         );
         draw_text(
             &format!("{}", game.score2),
             screen_width() * 0.75,
             50.0,
             50.0,
-            BLACK,
+            RED,
         );
 
         // Mostra nota atual da música (80s Synth Theme)
@@ -434,7 +427,7 @@ async fn main() {
             20.0,
             screen_height() - 30.0,
             20.0,
-            DARKGRAY,
+            PINK,
         );
 
         next_frame().await;
