@@ -1,0 +1,10 @@
+[package]
+name = "pong"
+version = "0.1.0"
+edition = "2021"
+authors = ["snake-outerheaven"]
+
+[dependencies]
+rand = "0.8"
+macroquad = "0.4"
+rodio = "0.17"
