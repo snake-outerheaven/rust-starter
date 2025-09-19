@@ -7,7 +7,7 @@ use rand::Rng; // biblioteca externa para geração de valores aleatórios
 use std::cmp::Ordering;
 // estrutura de comparação de números, da biblioteca padrão de comparativos
 use std::fs::{File, OpenOptions, create_dir_all}; // biblioteca de manipulação de arquivos em rust
-use std::io::{self, Read, Seek, Write};
+use std::io::{Read, Seek, Write, stdin};
 use std::path::PathBuf; // biblioteca padrão de entrada e saída
 // chamei desse jeito pela forma especial, de chamar um módulo interno e a biblioteca ao mesmo tempo
 // pois nas outras bibliotecas, reduzi o escopo, enquanto em io, preciso manter o uso total devido
@@ -41,7 +41,7 @@ fn obtendo_palpite() -> u32 {
         palpite.clear();
         // faltou limpar palpite a cada iteração, causando um bug de lógica, pois .read_line insere o conteúdo do buffer,
         // não limpando as entradas anteriores
-        io::stdin()
+        stdin()
             .read_line(&mut palpite)
             .expect("crash and burn! ( falha ao ler o palpite )");
         match palpite.trim().parse::<u32>() {
@@ -66,7 +66,7 @@ fn verif(tentativas: u32) -> bool {
     sleep(Duration::from_millis(300));
     println!("Você tentou {tentativas} vezes, deseja continuar? (S/N)");
     let mut entrada = String::new();
-    io::stdin()
+    stdin()
         .read_line(&mut entrada)
         .expect("crash and burn! não foi possível ler stdin.");
 
@@ -98,7 +98,7 @@ fn obtendo_nome() -> String {
     let mut resposta = String::new();
     sleep(Duration::from_millis(250));
     println!("Por favor, digite o seu nome:");
-    io::stdin()
+    stdin()
         .read_line(&mut nome)
         .expect("crash and burn! falha ao ler stdin");
 
@@ -106,7 +106,7 @@ fn obtendo_nome() -> String {
 
     while !confirmar {
         println!("O nome '{nome}' está correto? (S/N)");
-        io::stdin()
+        stdin()
             .read_line(&mut resposta)
             .expect("Crash and burn, falha ao ler stdin!");
 
