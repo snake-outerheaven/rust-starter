@@ -34,8 +34,8 @@ impl Apple {
     /// construtor da maçã
     pub fn new() -> Self {
         let mut rng: ThreadRng = thread_rng();
-        let posx: f32 = rng.gen_range(0.0..=(MAX_ARENA_WIDTH - 1.0));
-        let posy: f32 = rng.gen_range(0.0..=(MAX_ARENA_HEIGHT - 1.0));
+        let posx: f32 = rng.gen_range(1.0..=(MAX_ARENA_WIDTH - 1.0));
+        let posy: f32 = rng.gen_range(1.0..=(MAX_ARENA_HEIGHT - 1.0));
         let apple_type: AppleType = match rng.gen_range(0..3) {
             0 => AppleType::RED,
             1 => AppleType::BLUE,
@@ -145,8 +145,8 @@ impl Snake {
         self.should_grow = true;
     }
 
-    /// muda a direção da cobra (interface para input do teclado)
-    pub fn change_direction(&mut self, new_direction: Direction) {
+    /// define a direção da cobra (interface para input do teclado)
+    pub fn set_dir(&mut self, new_direction: Direction) {
         // Evita que a cobra se mova na direção oposta (colidir consigo mesma)
         let opposite_direction: bool = match (&self.dir, &new_direction) {
             (Direction::UP, Direction::DOWN) => true,
@@ -171,6 +171,21 @@ struct Game {
     lives: u8,
 }
 
+/// métodos do jogo, dá pra dizer que são a engine.
+
+impl Game {
+    /// construtor do jogo, colocando todos os atores do jogo em posição.
+    pub fn new() -> Self {
+        Self {
+            snake: Snake::new(),
+            apple: Apple::new(),
+            score: 0,
+            lives: 10,
+        }
+    }
+    // antes de pensar em mais coisas, resolver bugs lógicos dentro de cada ator.
+}
+
 /// funções que convertem as coordenadas da grade do jogo para as coodernadas da tela.
 fn to_screen_x(x: f32) -> f32 {
     x / MAX_ARENA_WIDTH * screen_width()
@@ -181,4 +196,6 @@ fn to_screen_y(y: f32) -> f32 {
 
 /// Função principal, que roda a janela do jogo.
 #[macroquad::main("Snake")]
-async fn main() {}
+async fn main() {
+    let game: Game = Game::new(); // jogo instanciado!
+}
