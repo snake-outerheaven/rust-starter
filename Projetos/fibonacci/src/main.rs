@@ -38,7 +38,6 @@ fn verif(x: &str) -> bool {
         io::stdin()
             .read_line(&mut verif)
             .expect("Falha ao ler stdin, encerrando o código");
-        tentativas += 1;
         match verif.trim().to_uppercase().as_str() {
             "S" => {
                 sleep(Duration::from_millis(250));
@@ -54,6 +53,7 @@ fn verif(x: &str) -> bool {
                 println!(
                     "Entrada inválida detectada, voce tem {tentativas} tentativas para digitar corretamente antes do código ser encerrado."
                 );
+                tentativas += 1;
                 continue;
             }
         }
@@ -67,7 +67,7 @@ fn verif(x: &str) -> bool {
 ///
 /// Obtém uma string do usuário, sendo uma das funções mais elementares do código. ( pode ser uada para obter valores para passar para uma função de conversão numérica, nomes, quaisquer dados importantes )
 fn obtendo_string() -> String {
-    let mut entrada = String::new();
+    let mut entrada: String = String::new();
     loop {
         entrada.clear();
         sleep(Duration::from_millis(250));
@@ -76,9 +76,9 @@ fn obtendo_string() -> String {
             .expect("falha ao ler stdin");
 
         if verif(&entrada) {
-            entrada = entrada.trim().to_string();
+            entrada = entrada.trim().to_owned();
             println!("Entrada {entrada} validada!");
-            return entrada.trim().to_string();
+            return entrada.trim().to_owned();
         } else {
             println!("Por favor, aguarde para digitar novamente.");
         }
@@ -131,7 +131,7 @@ fn fib(n: &BigUint) -> BigUint {
         i += one.clone();
     }
 
-    a// retorno o valor 
+    a // retorno o valor
 }
 
 /// format_biguint(x:BigUint) -> String
