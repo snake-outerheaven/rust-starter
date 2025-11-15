@@ -1,19 +1,19 @@
 # Space Conquerors 🦀🚀
 
-Um clone moderno do clássico Space Invaders, implementado em Rust com arquitetura robusta e memory safety garantido.
+Um clone minimalista do clássico Space Invaders, implementado em Rust com foco em simplicidade e memory safety.
 
 ## 📋 Sobre o Projeto
 
-Space Conquerors é uma reimaginação do icônico arcade Space Invaders (1978), desenvolvido em Rust utilizando o framework Macroquad. O projeto prioriza código limpo, segurança de memória e abstrações de custo zero, características fundamentais do Rust.
+Space Conquerors é uma reimaginação direta do icônico arcade Space Invaders (1978), desenvolvido em Rust utilizando o framework Macroquad. O projeto prioriza código limpo, arquitetura simples e as garantias de segurança de memória do Rust.
 
 ### Arquitetura
 
-O jogo utiliza uma arquitetura baseada em traits e enums para garantir flexibilidade e type safety:
+O jogo utiliza uma arquitetura direta e não-escalável, ideal para projetos educacionais:
 
-- **Enums de Estado**: Controle preciso do ciclo de vida das entidades
-- **Sistema de Tipos**: Diferentes tipos de balas e inimigos
-- **Trait `Shooter`**: Interface comum para entidades que podem disparar
-- **Pattern MVC**: Separação clara entre lógica (Controller), dados (Models) e renderização (View)
+- **Enums de Estado**: Controle preciso do ciclo de vida das entidades (`Alive`/`Dead`)
+- **Sistema de Tipos**: Diferentes tipos de balas e inimigos através de enums simples
+- **Pattern MVC Simplificado**: Separação clara entre dados (Models), lógica (Controller) e renderização (View)
+- **Código Único**: Todo o jogo em um único arquivo `main.rs` (~500 linhas)
 
 ## 🎮 Como Jogar
 
@@ -21,23 +21,25 @@ O jogo utiliza uma arquitetura baseada em traits e enums para garantir flexibili
 
 - **Seta para esquerda `←`** ou **A** — Move a nave para esquerda
 - **Seta para direita `→`** ou **D** — Move a nave para direita
-- **Espaço** — Dispara projétil
+- **Espaço** — Dispara projétil (máximo 3 simultâneos)
 
 ### Regras
 
 1. Destrua todos os invasores alienígenas antes que alcancem o solo
-2. Os invasores se movem em formação, descendo gradualmente
-3. Diferentes tipos de inimigos oferecem desafios únicos:
-   - **Boss** 👑 — Mais resistente e perigoso
+2. Os invasores se movem em formação horizontal, descendo ao atingir as bordas
+3. Você pode ter no máximo 3 balas ativas na tela simultaneamente
+4. Diferentes tipos de inimigos oferecem pontuações diferentes:
+   - **Boss** 👑 — Inimigo principal (maior pontuação)
    - **Mini-Boss** 💀 — Inimigo intermediário
    - **Thug** 👾 — Invasor básico
-4. O jogo termina se sua nave for destruída ou os invasores alcançarem o solo
+5. O jogo termina em vitória se todos os inimigos forem destruídos
+6. O jogo termina em derrota se os invasores alcançarem o solo
 
 ## 🚀 Como Executar
 
 ### Pré-requisitos
 
-- [Rust](https://rustup.rs/) (versão 1.70 ou superior recomendada)
+- [Rust](https://rustup.rs/) (versão 1.70 ou superior)
 - Cargo (incluído com a instalação do Rust)
 
 ### Instalação e Execução
@@ -60,7 +62,7 @@ O jogo utiliza uma arquitetura baseada em traits e enums para garantir flexibili
    cargo run
    ```
 
-4. Ou execute em modo release (otimizado):
+4. Ou execute em modo release (performance otimizada):
 
    ```bash
    cargo run --release
@@ -74,7 +76,9 @@ Para gerar um executável otimizado:
 cargo build --release
 ```
 
-O executável estará disponível em `target/release/space-invaders-clone` (ou `.exe` no Windows).
+O executável estará disponível em:
+- **Linux/macOS**: `target/release/space-invaders-clone`
+- **Windows**: `target/release/space-invaders-clone.exe`
 
 ## 🛠️ Tecnologias Utilizadas
 
@@ -87,66 +91,124 @@ O executável estará disponível em `target/release/space-invaders-clone` (ou `
 ```
 space-conquerors/
 ├── src/
-│   └── main.rs          # Código principal (Models, Controller, View)
+│   └── main.rs          # Todo o código do jogo (~500 linhas)
 ├── Cargo.toml           # Manifesto de dependências
 ├── Cargo.lock           # Lock das versões das dependências
 └── README.md            # Este arquivo
 ```
 
-### Organização do Código
+### Organização do Código (main.rs)
 
-O arquivo `main.rs` está estruturado em seções claras:
+O arquivo está estruturado em seções bem definidas:
 
-1. **Constantes**: Dimensões da grid, velocidades e parâmetros do jogo
-2. **Enumerações**: Estados e tipos das entidades
-3. **Models**: Estruturas de dados (`Player`, `Enemy`, `Bullet`)
-4. **Traits**: Comportamentos compartilhados (`Shooter`)
-5. **Controller**: Lógica do jogo (`Game`)
-6. **View**: Loop principal e renderização com Macroquad
+```rust
+// 1. Constantes
+const GRID_WIDTH: f32 = 800.0;
+const MAX_PLAYER_BULLETS: usize = 3;
+// ...
+
+// 2. Enumerações
+enum EntityState { Alive, Dead }
+enum BulletType { Red, Blue, Green }
+enum EnemyType { Boss, MiniBoss, Thug }
+enum GameState { Playing, Victory, GameOver }
+
+// 3. Models (Structs)
+struct Player { pos: Vec2, status: EntityState }
+struct Enemy { pos: Vec2, enemy_type: EnemyType, status: EntityState }
+struct Bullet { pos: Vec2, bullet_type: BulletType }
+
+// 4. Controller
+struct Game {
+    player: Player,
+    enemies: Vec<Enemy>,
+    player_bullets: Vec<Bullet>,
+    enemy_bullets: Vec<Bullet>,
+    score: u32,
+    enemy_moving_right: bool,
+    enemy_timer: f32,
+    state: GameState,
+}
+
+impl Game {
+    fn new() -> Self { /* ... */ }
+    fn update(&mut self, dt: f32) { /* ... */ }
+    fn draw(&self) { /* ... */ }
+}
+
+// 5. Main Loop
+#[macroquad::main("Space Conquerors")]
+async fn main() { /* ... */ }
+```
 
 ## 🔧 Configurações
 
-Personalize a experiência do jogo editando as constantes em `main.rs`:
+Personalize a experiência do jogo editando as constantes no início do `main.rs`:
 
 ```rust
-const GRID_WIDTH: f32 = 800.0;        // Largura da área de jogo
-const GRID_HEIGHT: f32 = 600.0;       // Altura da área de jogo
-const PLAYER_SPEED: f32 = 4.0;        // Velocidade da nave
-const BULLET_SPEED: f32 = 8.0;        // Velocidade dos projéteis
-const ENEMY_STEP_X: f32 = 12.0;       // Movimento horizontal dos inimigos
-const ENEMY_STEP_Y: f32 = 18.0;       // Descida vertical dos inimigos
+const GRID_WIDTH: f32 = 800.0;           // Largura da janela
+const GRID_HEIGHT: f32 = 600.0;          // Altura da janela
+const PLAYER_SPEED: f32 = 4.0;           // Velocidade da nave
+const BULLET_SPEED: f32 = 8.0;           // Velocidade dos projéteis
+const ENEMY_STEP_X: f32 = 12.0;          // Movimento horizontal dos inimigos
+const ENEMY_STEP_Y: f32 = 18.0;          // Descida vertical dos inimigos
+const MAX_PLAYER_BULLETS: usize = 3;     // Limite de balas na tela
 ```
 
 ## 🎯 Sistema de Balas
 
-O jogo implementa três tipos de projéteis, cada um com características únicas:
+O jogo suporta três tipos de projéteis (cores diferentes):
 
-- 🔴 **Red Bullet** — Projétil padrão
-- 🔵 **Blue Bullet** — Projétil especial
-- 🟢 **Green Bullet** — Projétil avançado
+- 🔴 **Red Bullet** — Projétil vermelho
+- 🔵 **Blue Bullet** — Projétil azul (padrão do jogador)
+- 🟢 **Green Bullet** — Projétil verde
+
+> **Nota**: Atualmente todos os tipos têm o mesmo comportamento, mas a estrutura permite fácil diferenciação futura.
 
 ## 🏆 Características Técnicas
 
-- ✅ **Memory Safety**: Garantido pelo sistema de ownership do Rust
-- ✅ **Zero Runtime Overhead**: Abstrações sem custo de performance
-- ✅ **Type Safety**: Sistema de tipos forte previne bugs em tempo de compilação
-- ✅ **Pattern Matching**: Uso extensivo de enums para estados do jogo
-- ✅ **Trait System**: Interface flexível para comportamentos compartilhados
+- ✅ **Memory Safety**: Sistema de ownership do Rust previne memory leaks
+- ✅ **Type Safety**: Enums fortemente tipados previnem bugs de estado inválido
+- ✅ **Zero Allocations Desnecessárias**: Uso eficiente de `Vec` e tipos stack-allocated
+- ✅ **Pattern Matching**: Uso idiomático de `match` para controle de fluxo
+- ✅ **Simplicidade**: Arquitetura não-escalável focada em clareza
+
+## 🎮 Detalhes de Implementação
+
+### Sistema de Colisão
+- Detecção simples baseada em distância euclidiana
+- Verificação de sobreposição de bounding boxes
+
+### Movimento dos Inimigos
+- Movimento em grupo sincronizado
+- Mudança de direção ao atingir bordas
+- Descida progressiva a cada mudança de direção
+
+### Controle de Estado
+- Estados discretos: `Playing`, `Victory`, `GameOver`
+- Transições automáticas baseadas em condições do jogo
 
 ## 🚧 Status do Projeto
 
-⚠️ **Em Desenvolvimento** — Este projeto está em fase inicial. As implementações das structs, traits e game loop estão pendentes.
+✅ **Estrutura Completa** — Todos os tipos e arquitetura definidos
 
-### Próximos Passos
+### Em Desenvolvimento
 
-- [ ] Implementar lógica do `Player`
-- [ ] Implementar lógica dos `Enemy`
-- [ ] Implementar trait `Shooter`
-- [ ] Desenvolver `Game` controller
-- [ ] Adicionar renderização visual
-- [ ] Implementar sistema de colisão
-- [ ] Adicionar efeitos sonoros
+- [ ] Implementar `Game::new()` - Inicializar grid de inimigos
+- [ ] Implementar `Game::update()` - Loop de jogo e física
+- [ ] Implementar `Game::draw()` - Renderização visual
+- [ ] Sistema de colisão bala-inimigo
+- [ ] Movimento sincronizado dos inimigos
+- [ ] Condições de vitória e derrota
+- [ ] Sistema de pontuação
+
+### Features Futuras (Opcional)
+
+- [ ] Sons e música
+- [ ] Efeitos visuais (explosões, partículas)
 - [ ] Sistema de high scores
+- [ ] Múltiplas ondas/fases
+- [ ] Power-ups
 
 ## 📝 Licença
 
@@ -154,15 +216,38 @@ Este projeto é de código aberto sob a [Licença MIT](LICENSE).
 
 ## 🤝 Contribuindo
 
-Contribuições são bem-vindas! Sinta-se à vontade para:
+Este é um projeto educacional focado em simplicidade. Contribuições são bem-vindas desde que mantenham a filosofia de código direto e não-escalável.
 
-1. Fazer fork do projeto
-2. Criar uma branch para sua feature (`git checkout -b feature/NovaFeature`)
-3. Commit suas mudanças (`git commit -m 'Adiciona nova feature'`)
-4. Push para a branch (`git push origin feature/NovaFeature`)
-5. Abrir um Pull Request
+### Como Contribuir
+
+1. Fork o projeto
+2. Crie uma branch (`git checkout -b feature/MinhaFeature`)
+3. Commit suas mudanças (`git commit -m 'Adiciona MinhaFeature'`)
+4. Push para a branch (`git push origin feature/MinhaFeature`)
+5. Abra um Pull Request
+
+### Diretrizes
+
+- Mantenha todo o código em `main.rs`
+- Evite abstrações desnecessárias
+- Priorize legibilidade sobre performance
+- Documente apenas o não-óbvio
+
+## 📚 Aprendizado
+
+Este projeto é ideal para aprender:
+
+- Fundamentos de Rust (ownership, borrowing, enums)
+- Desenvolvimento de jogos simples
+- Arquitetura MVC básica
+- Framework Macroquad
+- Game loops e delta time
+
+## 🙏 Créditos
+
+Inspirado no clássico **Space Invaders** (1978) por Tomohiro Nishikado.
 
 ---
 
 **Desenvolvido com 🦀 Rust**  
-**E muita determinação 🚀**
+**Mantido simples por design 🎯**
