@@ -1,107 +1,173 @@
-# Rush 🦀💻
-
-Um shell minimalista em Rust. Interface direta entre intenção humana e syscalls.
+# Rush 🦀⚡
+Um shell minimalista escrito em Rust. Arquitetura limpa, memory safety garantido, syscalls diretos.
 
 ## 📋 Sobre
-
-Rush é um shell Unix simples em Rust usando `std::process::Command`. Código limpo, memory safety, um único arquivo.
+Rush é um shell Unix moderno implementado em Rust, demonstrando os princípios de ownership, borrowing e error handling idiomático. Código estruturado com separação de responsabilidades e safety-first design.
 
 ### Arquitetura
+Design baseado em componentes com clara separação de concerns:
+- **Parser** - Tokenização de entrada via `split_whitespace()`
+- **Runner** - Execução de comandos com `std::process::Command`
+- **Shell** - Orquestração do REPL e gerenciamento de estado
+- **ShellStatus** - Enum para controle de fluxo type-safe
 
-REPL (Read-Eval-Print Loop) direto e não-escalável:
-
-- **Command Abstraction** - `std::process::Command` sobre fork/exec
-- **Código Único** - Todo o shell em `main.rs`
-
-## 💻 Uso
-
-```sh
-rsh> ls -la
-rsh> cargo build
-rsh> exit
+```
+Input → Parser → Runner → ShellStatus → Shell
+                    ↓
+              Command/Builtin
 ```
 
-### Builtin
+## 💻 Uso
+```sh
+snake@outerheaven /home/snake! ls -la
+snake@outerheaven /home/snake! cd /tmp
+snake@outerheaven /tmp! pwd
+/tmp
+snake@outerheaven /tmp! exit
+```
 
+### Builtins
+- **`cd [path]`** — Muda diretório (default: $HOME)
 - **`exit`** — Encerra o shell
 
 ### Comandos Externos
-
-Tudo que não for builtin executa via `Command::new()` procurando no PATH do sistema.
+Qualquer comando não-builtin executa via `Command::new()` buscando no PATH do sistema.
 
 ## 🚀 Executar
-
 ```sh
 cargo run
 ```
 
-ou
-
+Ou compilar para release:
 ```sh
-cargo run --release
+cargo build --release
+./target/release/rush
 ```
 
 ## 🛠️ Stack
-
-- **Rust** 🦀 — Memory safety
+- **Rust** 🦀 — Memory safety sem garbage collector
 - **std::process::Command** — Abstração sobre fork/exec
-- **std::io** — I/O com error handling
+- **std::env** — Variáveis de ambiente e navegação de diretórios
+- **gethostname** — Obtenção do hostname do sistema
 
 ## 📁 Estrutura
-
 ```
 rush/
 ├── src/
-│   └── main.rs          # Todo o código
-├── Cargo.toml
+│   └── main.rs          # Implementação completa
+├── Cargo.toml           # Dependências e metadata
 └── README.md
 ```
 
 ## 🚧 Status
 
-### Fase 1: MVP ✅
-- [x] REPL básico
-- [x] Parsing simples (split por espaços)
-- [x] Execução via `Command`
+### Fase 1: Core ✅
+- [x] REPL funcional
+- [x] Parser com tokenização
+- [x] Runner com pattern matching
+- [x] Enum-based status handling
 - [x] Builtin: `exit`
+- [x] Builtin: `cd` com fallback para $HOME
+- [x] Prompt customizado (user@hostname path)
+- [x] Fail-safe mechanism (MAX_SHELL_TRIES)
 
-### Fase 2: Builtins
-- [ ] `cd` (change directory)
-- [ ] `pwd` (print working directory)
-- [ ] `export` (variáveis de ambiente)
+### Fase 2: Error Handling
+- [ ] Custom error types (`ShellError`)
+- [ ] `Result<T, E>` propagation com `?`
+- [ ] Graceful degradation
 
-### Fase 3: Redirecionamento
+### Fase 3: Command Registry
+- [ ] HashMap de builtins
+- [ ] Trait `Executable` para comandos
+- [ ] Plugin system para extensões
+
+### Fase 4: Redirecionamento
 - [ ] `>`, `<`, `2>` (stdout, stdin, stderr)
+- [ ] `>>` (append)
 
-### Fase 4: Pipes
-- [ ] `|` (pipeline)
+### Fase 5: Pipes
+- [ ] `|` (pipeline entre processos)
 
-### Fase 5: Job Control
-- [ ] `&` (background)
-- [ ] Signal handling
+### Fase 6: Job Control
+- [ ] `&` (background jobs)
+- [ ] Signal handling (SIGINT, SIGTSTP)
+- [ ] `jobs`, `fg`, `bg` builtins
+
+### Fase 7: Advanced Features
+- [ ] Command history
+- [ ] Tab completion
+- [ ] Environment variable expansion (`$VAR`)
+- [ ] Config file (`~/.rushrc`)
 
 ## 🏆 Características
 
-- ✅ Memory Safety - Ownership do Rust
-- ✅ Error Handling - `Result<T, E>`
-- ✅ Zero Unsafe - Nenhum bloco unsafe
-- ✅ Simplicidade - Não-escalável por design
+- ✅ **Memory Safety** - Ownership e borrowing do Rust
+- ✅ **Type Safety** - Enum-based state machine
+- ✅ **Error Handling** - Pattern matching extensivo
+- ✅ **Zero Unsafe** - Nenhum bloco `unsafe`
+- ✅ **Modular** - Separação clara: Parser, Runner, Shell
+- ✅ **Fail-Safe** - Proteção contra loops infinitos de erro
+- ✅ **Cross-Platform** - Funciona em qualquer Unix-like
 
-## 📚 Aprendizado
+## 📚 Conceitos Demonstrados
 
-- Ownership, borrowing, lifetimes
-- Process management
-- I/O e file descriptors
+### Rust
+- Ownership e borrowing
+- Pattern matching com `match`
+- Enums para state machines
+- Trait objects (`dyn Executable` - futuro)
 - Error handling idiomático
+- Zero-cost abstractions
 
-## 🎓 Conceitos de SO
+### Sistemas Operacionais
+- **Process Management** - fork/exec via `Command`
+- **File Descriptors** - stdin/stdout/stderr
+- **Environment Variables** - Propagação de contexto
+- **Working Directory** - `chdir()` via `set_current_dir()`
+- **System Calls** - Abstração Rust sobre libc
 
-- **Process Control Block** - Estrutura do kernel
-- **File Descriptors** - 0=stdin, 1=stdout, 2=stderr
-- **Fork/Exec** - Modelo Unix de processos
-- **Environment Variables** - Contexto entre processos
+## 🎯 Filosofia de Design
+
+1. **Simplicidade** - Código claro sobre cleverness
+2. **Safety** - Compiler-enforced correctness
+3. **Modularidade** - Componentes independentes
+4. **Iterativo** - Funcionalidade incremental
+5. **Educational** - Código como documentação
+
+## 🧪 Aprendizados
+
+Este projeto demonstra:
+- Como Rust gerencia processos de forma segura
+- Padrões de arquitetura em programação de sistemas
+- Trade-offs entre ergonomia e performance
+- A diferença entre abstrações de alto nível (Rust) e baixo nível (C)
+
+## 🔗 Dependências
+
+```toml
+[dependencies]
+gethostname = "0.5"
+```
+
+## 📖 Referências
+
+- [The Rust Book](https://doc.rust-lang.org/book/)
+- [Rust CLI Book](https://rust-cli.github.io/book/)
+- [Unix Process Model](https://en.wikipedia.org/wiki/Process_(computing))
+
+## 🤝 Contribuindo
+
+Rush é um projeto educacional. Pull requests são bem-vindos para:
+- Novos builtins
+- Melhorias de error handling
+- Otimizações de performance
+- Documentação
+
+## 📜 Licença
+
+MIT License - Faça o que quiser, aprenda e compartilhe.
 
 ---
 
-**Desenvolvido com 🦀 Rust**  
-**Onde intenção encontra syscall 💻**
+**Desenvolvido com 🦀 Rust e ⚡ paixão por programação de sistemas**  
+*"Onde ownership encontra syscalls"*
