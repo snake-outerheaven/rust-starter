@@ -1,7 +1,7 @@
 use std::{
     env::{current_dir, set_current_dir, var},
-    io::{Error, Write, stdin, stdout},
-    process::{Command, ExitStatus},
+    io::{Write, stdin, stdout},
+    process::Command,
 };
 
 use gethostname::gethostname;
@@ -40,15 +40,32 @@ impl Runner {
                     ShellStatus::Ok
                 }
             }
+            "pwd" => {
+                if let Some(pwd) = current_dir().unwrap().to_str() {
+                    println!("{}", pwd);
+                    ShellStatus::Ok
+                } else {
+                    eprintln!("rush: couldnt show pwd, what have you done?");
+                    ShellStatus::CommandFailed
+                }
+            }
             "exit" => ShellStatus::Dead,
+            "sudo" => {
+                eprintln!("rush: sudo support is not implemented yet.");
+                ShellStatus::Ok
+            }
             _ => {
                 let cmd = tokens[0].as_str();
                 let args = tokens[1..].iter().map(|s| s.as_str());
-                let intern_runner: Result<ExitStatus, Error> =
-                    Command::new(cmd).args(args).status();
-                match intern_runner {
-                    Ok(_) => ShellStatus::Ok,
-                    Err(_) => ShellStatus::CommandFailed,
+                if let Err(e) = Command::new(cmd).args(args).status() {
+                    if e.kind() == std::io::ErrorKind::NotFound {
+                        eprintln!("rush: {} command not found", cmd);
+                    } else {
+                        eprintln!("rush: {}: {}", cmd, e);
+                    }
+                    ShellStatus::CommandFailed
+                } else {
+                    ShellStatus::Ok
                 }
             }
         }
@@ -66,8 +83,8 @@ impl Shell {
     fn new() -> Self {
         let user: String = var("USER").unwrap_or_else(|_| "user".to_string());
         let hostname: String = gethostname().to_string_lossy().to_string();
-        let cwd: String = current_dir().unwrap().display().to_string();
-        let prompt: String = format!("{}@{} {}! ", user, hostname, cwd);
+        let pwd: String = current_dir().unwrap().display().to_string();
+        let prompt: String = format!("{}@{} {}! ", user, hostname, pwd);
 
         Self {
             prompt,
@@ -75,6 +92,12 @@ impl Shell {
             runner: Runner,
             status: ShellStatus::Ok,
         }
+    }
+    fn update(&mut self) {
+        let user: String = var("USER").unwrap_or_else(|_| "user".to_string());
+        let hostname: String = gethostname().to_string_lossy().to_string();
+        let pwd: String = current_dir().unwrap().display().to_string();
+        self.prompt = format!("{}@{} {}! ", user, hostname, pwd);
     }
     fn printprompt(&self) {
         print!("{}", self.prompt);
@@ -85,14 +108,15 @@ impl Shell {
 fn main() {
     let home: String = var("HOME").expect("Couldnt get home variable");
     let mut main_fail_counter: u8 = 0;
+    let mut sh: Shell = Shell::new();
     loop {
         if main_fail_counter == MAX_SHELL_TRIES {
             break;
         }
-        let mut sh: Shell = Shell::new();
+        sh.update();
         sh.printprompt();
         let mut input: String = String::new();
-        stdin().read_line(&mut input).expect("Rush is out of hush");
+        stdin().read_line(&mut input).expect("Rush is out of hush!");
 
         let tokens: Vec<String> = sh.parser.parse(input.as_str());
 
