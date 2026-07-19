@@ -19,16 +19,16 @@ use std::time::Duration; // estrutura que me permite manipular o tempo, usada pr
 // função que busca limpar tela de forma portátil no Windows e sistemas Unix-like
 
 fn limpar_tela() {
-    println!("Limpando tela...");
-    sleep(Duration::from_millis(500));
-    let clear = if cfg!(target_os = "windows") {
-        "cls"
+    if cfg!(target_os = "windows") {
+        Command::new("cmd")
+            .args(["/C", "cls"])
+            .status()
+            .expect("Não foi possível limpar tela!");
     } else {
-        "clear"
-    };
-    Command::new(clear)
-        .status()
-        .expect("Não foi possível limpar tela!");
+        Command::new("clear")
+            .status()
+            .expect("Não foi possível limpar tela!");
+    }
 }
 
 // função que faz a captura do valor do número do usuário, está dentro da função jogar
