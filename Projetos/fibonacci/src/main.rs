@@ -94,17 +94,15 @@ fn obter_numero() -> BigUint {
         sleep(Duration::from_millis(250));
         println!("Digite um número válido.");
         let numero = obtendo_string(); // obtem uma string validada
-        match numero.trim().parse::<BigUint>() {
-            Ok(num) => {
-                sleep(Duration::from_millis(250));
-                println!("Número lido: {num}");
-                return num;
-            }
-            Err(_) => {
-                sleep(Duration::from_millis(250));
-                println!("Valor inválido detectado, por favor, digite números positivos inteiros.");
-                continue;
-            }
+        
+        if let Ok(num) = numero.trim().parse::<BigUint>() {
+            sleep(Duration::from_millis(250));
+            println!("Número lido: {num}");
+            return num;
+        } else {
+            sleep(Duration::from_millis(250));
+            println!("Valor invalido lido, por favor, digite números inteiros positivos");
+            continue;
         }
     }
 }
