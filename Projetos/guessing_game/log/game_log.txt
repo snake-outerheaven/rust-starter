@@ -1,4 +1,8 @@
 Nome do jogador: neneo - Número de tentativas: 9 - Número secreto da rodada: 32 | Horário da partida: 25/08/2025 - 11:33
 
+<<<<<<< HEAD
 Nome do jogador: neo - Número de tentativas: 8 - Número secreto da rodada: 23 | Horário da partida: 19/07/2026 - 13:24
+=======
+Nome do jogador: Poggers - Número de tentativas: 5 - Número secreto da rodada: 35 | Horário da partida: 19/09/2025 - 23:30
+>>>>>>> dev
 

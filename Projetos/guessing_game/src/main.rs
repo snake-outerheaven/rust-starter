@@ -180,11 +180,13 @@ fn jogar() -> (u32, u32) {
     // func retorna tupla, para salvar no arquivo
 
     let numero_secreto: u32 = rand::thread_rng().gen_range(1..=100);
+    let numero_secreto: u32 = rand::thread_rng().gen_range(1..=100);
     // este é o gerador de números aleatórios
     // coisas como RNG geralmente tem uma semente de geração, como os mundos do minecraft, e aqui não
     // é diferente, thread_rng faz a mesma coisa usando as fontes de entropia do meu sistema ( caos ) para gerar um número
     // e o gen_range apenas limita o alcance da geração de números aleatórios para o intervalo de 1 a 100
 
+    let mut usuario_quer_parar: bool = false;
     let mut usuario_quer_parar: bool = false;
 
     let mut tentativas: u32 = 0;
@@ -236,6 +238,7 @@ fn main() {
     let (numero_secreto, tentativas) = jogar();
     let tempo_atual: DateTime<Local> = Local::now();
     let time_stamp_now: String = tempo_atual.format("%d/%m/%Y - %H:%M").to_string();
+    let linha: String = format!(
     let linha: String = format!(
         "Nome do jogador: {usuario} - Número de tentativas: {tentativas} - Número secreto da rodada: {numero_secreto} | Horário da partida: {time_stamp_now}"
     );
