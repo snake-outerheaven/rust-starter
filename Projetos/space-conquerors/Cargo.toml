@@ -1,8 +1,0 @@
-[package]
-name = "space-conquerors"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-macroquad = "0.4.14"
-rand = "0.9.2"
