@@ -19,10 +19,44 @@ use std::time::Duration; // estrutura que me permite manipular o tempo, usada pr
 // função que busca limpar tela de forma portátil no Windows e sistemas Unix-like
 
 fn limpar_tela() {
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+    if cfg!(target_os = "windows") {
+        Command::new("cmd")
+            .args(["/C", "cls"])
+            .status()
+            .expect("Não foi possível limpar tela!");
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     println!("Limpando tela...");
     sleep(Duration::from_millis(500));
     let clear: &'static str = if cfg!(target_os = "windows") {
         "cls"
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> dev
+>>>>>>> Stashed changes
+=======
+>>>>>>> dev
+>>>>>>> Stashed changes
+=======
+>>>>>>> dev
+>>>>>>> Stashed changes
     } else {
         "clear"
     };
