@@ -1,5 +1,7 @@
+use ::rand::rngs::ThreadRng;
 use ::rand::{thread_rng, Rng};
 use macroquad::prelude::*;
+use rodio::source::{Amplify, TakeDuration};
 use rodio::{source::SineWave, OutputStream, Sink, Source};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
@@ -38,10 +40,10 @@ impl AudioSystem {
     pub fn new() -> Result<Self, Box<dyn std::error::Error>> {
         // Inicializa áudio com rodio
         let (_stream, stream_handle) = OutputStream::try_default()?;
-        let sink = Sink::try_new(&stream_handle)?;
+        let sink: Sink = Sink::try_new(&stream_handle)?;
 
         // Progressão vi-IV-I-V clássica dos anos 80 em E menor - tons agudos
-        let background_notes = vec![
+        let background_notes: Vec<(f32, f32, &'static str)> = vec![
             // Primeira volta: C#m - A - E - B (vi - IV - I - V)
             (554.37, 1.2, "C#5"), // C# minor (vi) - início melancólico
             (880.00, 1.0, "A5"),  // A major (IV) - resolução
@@ -80,7 +82,7 @@ impl AudioSystem {
 
             // Toca beep de colisão
             if let Ok(sink) = self.sink.lock() {
-                let source = SineWave::new(800.0)
+                let source: Amplify<TakeDuration<SineWave>> = SineWave::new(800.0)
                     .take_duration(Duration::from_millis(100))
                     .amplify(0.3);
                 sink.append(source);
@@ -97,16 +99,18 @@ impl AudioSystem {
         // Música de fundo (sequenciador simples)
         self.music_timer += dt;
         let (_, duration, _) = self.background_notes[self.music_index];
+        // forma interessante de desestruturas apenas determinados valores de uma tupla
 
         if self.music_timer >= duration {
             self.music_timer = 0.0;
             self.music_index = (self.music_index + 1) % self.background_notes.len();
 
-            let (freq, dur, note_name) = self.background_notes[self.music_index];
+            let (freq, dur, note_name): (f32, f32, &'static str) =
+                self.background_notes[self.music_index];
 
             // Toca a nota da melodia
             if let Ok(sink) = self.sink.lock() {
-                let source = SineWave::new(freq)
+                let source: Amplify<TakeDuration<SineWave>> = SineWave::new(freq)
                     .take_duration(Duration::from_secs_f32(dur * 0.8)) // Um pouco mais curto
                     .amplify(0.1); // Volume baixo para música de fundo
                 sink.append(source);
@@ -177,13 +181,13 @@ struct Ball {
 impl Ball {
     /// Cria uma nova bola com velocidade inicial aleatória
     pub fn new() -> Self {
-        let mut rng = thread_rng();
-        let vx = if rng.gen_bool(0.5) {
+        let mut rng: ThreadRng = thread_rng();
+        let vx: f32 = if rng.gen_bool(0.5) {
             rng.gen_range(2.4..=4.0)
         } else {
             -rng.gen_range(2.4..=4.0)
         };
-        let vy = if rng.gen_bool(0.5) {
+        let vy: f32 = if rng.gen_bool(0.5) {
             rng.gen_range(2.4..=4.0)
         } else {
             -rng.gen_range(2.4..=4.0)
@@ -200,7 +204,7 @@ impl Ball {
     /// Move a bola de acordo com sua velocidade e tempo delta
     pub fn update(&mut self, dt: f32) {
         // Aplica aceleração gradual
-        let current_speed = (self.vx.powi(2) + self.vy.powi(2)).sqrt();
+        let current_speed: f32 = (self.vx.powi(2) + self.vy.powi(2)).sqrt();
         if current_speed < MAX_BALL_SPEED {
             let acceleration_factor = 1.0 + (BALL_ACCELERATION * dt);
             self.vx *= acceleration_factor;
@@ -213,7 +217,7 @@ impl Ball {
 
     /// Acelera a bola ligeiramente após rebater em uma raquete
     fn accelerate(&mut self) {
-        let speed_increase = 1.1; // Aumenta 10% na velocidade
+        let speed_increase: f32 = 1.1; // Aumenta 10% na velocidade
         self.vx *= speed_increase;
         self.vy *= speed_increase;
 
@@ -257,7 +261,7 @@ struct Game {
 
 impl Game {
     pub fn new() -> Result<Self, Box<dyn std::error::Error>> {
-        let audio = AudioSystem::new()?;
+        let audio: AudioSystem = AudioSystem::new()?;
 
         Ok(Self {
             ball: Ball::new(),

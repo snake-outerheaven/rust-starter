@@ -187,7 +187,7 @@ fn obtendo_nome() -> String {
 ///salvar(conversao: (f64, String), user: String)
 ///
 /// Esta função busca salvar os dados gerados, sendo totalmente opcional.
-fn salvar(conversao: (String, String), user: &String) {
+fn salvar(conversao: &(String, String), user: &String) {
     let (valor, escolha) = conversao; // desestruturando uma tupla de forma simples
 
     sleep(Duration::from_millis(250));
@@ -299,6 +299,6 @@ fn main() {
     limpar_tela();
     let nome = obtendo_nome();
     let conversao = tempconverter();
-    salvar(conversao, &nome);
+    salvar(&conversao, &nome);
 }
 // preciso prestar mais atenção, bugs críticos iam passar, é uma boa dar uma reavaliada em todos os códigos para depois prosseguir estudando.
