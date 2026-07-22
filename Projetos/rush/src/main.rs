@@ -59,7 +59,7 @@ impl Runner {
                 let args = tokens[1..].iter().map(|s| s.as_str());
                 if let Err(e) = Command::new(cmd).args(args).status() {
                     if e.kind() == std::io::ErrorKind::NotFound {
-                        eprintln!("rush: {} command not found", cmd);
+                        eprintln!("rush: {} not found", cmd);
                     } else {
                         eprintln!("rush: {}: {}", cmd, e);
                     }
