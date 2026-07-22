@@ -41,7 +41,7 @@ impl Runner {
                 }
             }
             "pwd" => {
-                if let Some(pwd) = current_dir().unwrap().to_str() {
+                if let Some(pwd) = current_dir().expect("f rush").to_str() {
                     println!("{}", pwd);
                     ShellStatus::Ok
                 } else {
