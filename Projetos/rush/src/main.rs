@@ -109,13 +109,16 @@ fn main() {
     let home: String = var("HOME").expect("Couldnt get home variable");
     let mut main_fail_counter: u8 = 0;
     let mut sh: Shell = Shell::new();
+    let mut input: String = String::new();
     loop {
+        if !input.is_empty() {
+            input.clear();
+        }
         if main_fail_counter == MAX_SHELL_TRIES {
             break;
         }
         sh.update();
         sh.printprompt();
-        let mut input: String = String::new();
         stdin().read_line(&mut input).expect("Rush is out of hush!");
 
         let tokens: Vec<String> = sh.parser.parse(input.as_str());
