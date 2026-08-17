@@ -1,22 +1,28 @@
-// aqui vou escrever o código do jogo da adivinhação do capítulo 2 do livro The Rust Programming Language, mas
-// vou fazer umas pequenas alterações do original, primeiramente, pretendo modularizar o código, criando uma
-// função que obtenha a entrada do número ( a função vai retornar um result)
+// Jogo de adivinhação - Capítulo 2 do The Rust Programming Language
+// Modificações: modularização e logging de partidas
 
 use chrono::{DateTime, Local};
-use rand::Rng; // biblioteca externa para geração de valores aleatórios
-use std::cmp::Ordering;
-// estrutura de comparação de números, da biblioteca padrão de comparativos
-use std::fs::{File, OpenOptions, create_dir_all}; // biblioteca de manipulação de arquivos em rust
-use std::io::{Read, Seek, Write, stdin};
-use std::path::PathBuf; // biblioteca padrão de entrada e saída
-// chamei desse jeito pela forma especial, de chamar um módulo interno e a biblioteca ao mesmo tempo
-// pois nas outras bibliotecas, reduzi o escopo, enquanto em io, preciso manter o uso total devido
-// ao fato de I/O ser o core do programa
-use std::process::{Command, exit}; // estrutura Command usada para rodar comandos do shell
-use std::thread::sleep; // função que pausa o código, da biblioteca de manipulação de threads
-use std::time::Duration; // estrutura que me permite manipular o tempo, usada principalmente no sleep
-// vem da biblioteca padrão de tipos temporais ( não sei melhor forma de descrever)
-// função que busca limpar tela de forma portátil no Windows e sistemas Unix-like
+use rand::Rng;
+use std::{
+    cmp::Ordering,
+    fs::{File, OpenOptions, create_dir_all},
+    io::{Read, Seek, Write, stdin},
+    path::PathBuf,
+    process::{Command, exit},
+    thread::sleep,
+    time::Duration,
+};
+
+/*
+ * Documentação das importações de std:
+ * - cmp::Ordering: Enumeração para comparação de valores (Less, Equal, Greater)
+ * - fs::{File, OpenOptions, create_dir_all}: Manipulação de arquivos e diretórios
+ * - io::{Read, Seek, Write, stdin}: Entrada/Saída de dados
+ * - path::PathBuf: Representação de caminhos de arquivo
+ * - process::{Command, exit}: Execução de comandos do sistema e encerramento
+ * - thread::sleep: Pausa de execução em threads
+ * - time::Duration: Representação de intervalos de tempo
+ */
 
 fn limpar_tela() {
     if cfg!(target_os = "windows") {
@@ -191,28 +197,19 @@ fn jogar() -> (u32, u32) {
     (numero_secreto, tentativas)
 }
 
-fn main() {
-    limpar_tela();
-    println!("Seja bem vindo à este pequeno jogo de advinhação em Rust!");
-    println!("Seu progresso será salvo na pasta log do projeto!");
-    let usuario: String = obtendo_nome();
-    let (numero_secreto, tentativas) = jogar();
+fn salvar_log_jogo(usuario: &str, numero_secreto: u32, tentativas: u32) {
     let tempo_atual: DateTime<Local> = Local::now();
     let time_stamp_now: String = tempo_atual.format("%d/%m/%Y - %H:%M").to_string();
     let linha: String = format!(
         "Nome do jogador: {usuario} - Número de tentativas: {tentativas} - Número secreto da rodada: {numero_secreto} | Horário da partida: {time_stamp_now}"
     );
 
-    // em ultima análise, fica mais interessante refatorar o código
-
-    // fica para o registro como gerenciar arquivos...
     let mut log: PathBuf = PathBuf::from("log");
 
     if !log.exists() {
         sleep(Duration::from_millis(750));
         println!("Diretório de registro não existe, tentando cria-lo...");
         match create_dir_all(&log) {
-            // tive que passar por referencia, pois só preciso do valor
             Ok(_) => {
                 sleep(Duration::from_millis(750));
                 println!("Diretório de registro criado!");
@@ -227,16 +224,12 @@ fn main() {
     };
 
     log.push("game_log.txt");
-    // adicionando o caminho do jogo, olhando em um sentido mais técnico, Pathbuf é uma estrutura complexa
-    // de dados que suporta operações de pilha.
 
     let mut arquivo: Option<File> = match OpenOptions::new()
         .append(true)
         .create(true)
         .read(true)
         .open(&log)
-    // passo o log por referencia, coletando o valor, sem & o programa cria uma nova instancia de log para
-    // ser usada aqui.
     {
         Ok(file) => {
             sleep(Duration::from_millis(750));
@@ -250,15 +243,6 @@ fn main() {
         }
     };
 
-    // arquivo agora é um Option<File>
-    // Option é um enum, consistindo de
-    // 2 variantes, Some e None, Some
-    // trata o caso quando o arquivo existe
-    // e None é quando ele não existe.
-    // Como Some pode se referir a uma
-    // gama de tipos, essa enum é um dos
-    // vários casos para
-
     if let Some(arquivo) = arquivo.as_mut() {
         match writeln!(arquivo, "{linha}\n") {
             Ok(_) => {
@@ -270,7 +254,6 @@ fn main() {
                 println!(
                     "Erro ao salvar arquivo, favor verificar se a pasta log do projeto existe."
                 );
-                println!("Aqui seguem os dados do jogador para registro externo.");
             }
         };
     } else {
@@ -278,9 +261,8 @@ fn main() {
     }
 
     sleep(Duration::from_millis(250));
-
     println!(
-        "Abaixo serão mostradas as rodadas anteriores, com a rodada atual sendo a utlima listada."
+        "Abaixo serão mostradas as rodadas anteriores, com a rodada atual sendo a última listada."
     );
 
     let mut conteudo = String::new();
@@ -296,6 +278,17 @@ fn main() {
 
         println!("{conteudo}");
     } else {
-        println!("Aqui deveria haver a leitura do arquivo, mas como não houve, ")
+        println!("Aqui deveria haver a leitura do arquivo, mas como não houve.");
     }
+}
+
+fn main() {
+    limpar_tela();
+    println!("Seja bem vindo à este pequeno jogo de advinhação em Rust!");
+    println!("Seu progresso será salvo na pasta log do projeto!");
+
+    let usuario: String = obtendo_nome();
+    let (numero_secreto, tentativas) = jogar();
+
+    salvar_log_jogo(&usuario, numero_secreto, tentativas);
 }
